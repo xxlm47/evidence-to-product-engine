@@ -56,7 +56,7 @@ write_if_missing() {
 
 Project: $SLUG
 
-Complete this stage using the relevant prompt in the `prompts/` directory.
+Complete this stage using the relevant prompt in the prompts/ directory.
 
 ## Evidence / output
 
