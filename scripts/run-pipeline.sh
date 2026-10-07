@@ -80,9 +80,8 @@ stage_packaging() { write_if_missing "$DIR/packaging/PACKAGING.md" "Product Pack
 stage_launch() {
   write_if_missing "$DIR/launch/LAUNCH.md" "Launch Plan"
   write_if_missing "$DIR/metrics/METRICS.md" "Metrics and Feedback"
-  # Never overwrite a user's review notes or approval record on reruns.
-  write_if_missing "$DIR/launch/READY-TO-PUBLISH.md" "Publication Readiness Review"
-  if [[ "$(cat "$DIR/launch/READY-TO-PUBLISH.md")" == *"TODO: Replace this placeholder"* ]]; then
+  # Create the readiness template once; never overwrite user review notes.
+  if [[ ! -f "$DIR/launch/READY-TO-PUBLISH.md" ]]; then
     cat > "$DIR/launch/READY-TO-PUBLISH.md" <<EOF
 # Publication Readiness Review
 
