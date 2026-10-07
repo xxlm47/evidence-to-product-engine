@@ -50,6 +50,32 @@ if "$ROOT/new-project.sh" -t "$TEST_SLUG" -a "Test Audience" -o "Test Outcome" -
   else
     error "Launcher execution created incomplete workspace structure"
   fi
+  if [ -f "$TEST_DIR/project.json" ]; then
+    if "$ROOT/scripts/run-pipeline.sh" "$TEST_SLUG" launch >/dev/null 2>&1; then
+      READY="$TEST_DIR/launch/READY-TO-PUBLISH.md"
+      if [ -f "$READY" ] && grep -q "NOT CLEARED" "$READY"; then
+        info "Pipeline readiness default: PASSED"
+      else
+        error "Pipeline did not create an explicitly uncleared readiness review"
+      fi
+
+      printf '\nVALIDATOR_SENTINEL: preserve this user review note\n' > "$READY"
+      if "$ROOT/scripts/run-pipeline.sh" "$TEST_SLUG" launch >/dev/null 2>&1 && grep -q "VALIDATOR_SENTINEL" "$READY"; then
+        info "Pipeline preserves existing readiness review: PASSED"
+      else
+        error "Pipeline overwrote an existing readiness review"
+      fi
+    else
+      error "Pipeline launch scaffolding failed"
+    fi
+  fi
+
+  if "$ROOT/scripts/run-pipeline.sh" "../$TEST_SLUG" research >/dev/null 2>&1; then
+    error "Pipeline accepted a path-traversal project slug"
+  else
+    info "Pipeline rejects unsafe project slugs: PASSED"
+  fi
+
   rm -rf "$TEST_DIR"
 else
   error "Launcher execution test failed"
