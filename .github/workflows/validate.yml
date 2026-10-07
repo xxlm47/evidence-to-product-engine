@@ -25,9 +25,9 @@ jobs:
           import re
 
           html = Path("app/index.html").read_text(encoding="utf-8")
-          scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script\\s*>", html, flags=re.I | re.S)
+          scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script\s*>", html, flags=re.I | re.S)
           if not scripts:
               raise SystemExit("No inline JavaScript found in app/index.html")
-          Path("/tmp/evidence-to-product-app.js").write_text("\\n".join(scripts), encoding="utf-8")
+          Path("/tmp/evidence-to-product-app.js").write_text("\n".join(scripts), encoding="utf-8")
           PY
           node --check /tmp/evidence-to-product-app.js
