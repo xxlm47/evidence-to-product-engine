@@ -1,0 +1,35 @@
+{
+  "engine": {
+    "name": "Evidence-to-Product Engine",
+    "version": "2.0"
+  },
+  "project": {
+    "slug": "example-budget-travel",
+    "topic": "Example Budget Travel",
+    "audience": "Budget travelers and backpackers",
+    "primary_outcome": "Plan an awesome 2-week trip under 00",
+    "mode": "full",
+    "created_at": "2026-10-06T14:06:31Z",
+    "startup_cost_usd": 0
+  },
+  "pipeline": {
+    "current_stage": "INTAKE",
+    "status": "active",
+    "completed_stages": []
+  },
+  "gates": {
+    "research_approved": false,
+    "opportunity_approved": false,
+    "outline_approved": false,
+    "draft_approved": false,
+    "fact_check_approved": false,
+    "package_approved": false,
+    "launch_approved": false
+  },
+  "metrics": {
+    "units_sold": 0,
+    "revenue_usd": 0,
+    "reviews": 0,
+    "conversion_rate": null
+  }
+}

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.json">
+<title>Evidence-to-Product Engine</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#f3f4f6}
+*{box-sizing:border-box}body{margin:0}header{background:#111827;color:white;padding:20px max(16px,calc((100% - 1100px)/2))}main{max-width:1100px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:280px 1fr;gap:16px}@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:white;border:1px solid #d1d5db;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 2px #0000000d}
+h1,h2,h3{margin-top:0}label{display:block;font-weight:650;margin-top:10px}input,textarea,select,button{font:inherit;width:100%;padding:10px;margin-top:5px;border:1px solid #9ca3af;border-radius:9px}textarea{min-height:90px;resize:vertical}button{background:#111827;color:white;border:0;cursor:pointer;font-weight:650}.secondary{background:#e5e7eb;color:#111827}.danger{background:#b91c1c}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.row{grid-template-columns:1fr}}
+.tabs{display:flex;gap:6px;overflow:auto;margin-bottom:12px}.tab{width:auto;white-space:nowrap}.tab.active{background:#374151}.muted{color:#6b7280}.stage{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #e5e7eb}.stage input{width:auto;margin:0}.pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#e5e7eb;font-size:.8rem}.source,.gap{border:1px solid #d1d5db;border-radius:10px;padding:12px;margin:8px 0}.source strong,.gap strong{display:block}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{width:auto}.score{font-size:1.5rem;font-weight:800}.warning{background:#fff7ed;border-color:#fdba74}.success{background:#ecfdf5;border-color:#86efac}pre{white-space:pre-wrap;overflow:auto;background:#111827;color:#f9fafb;padding:12px;border-radius:9px}
+</style>
+</head>
+<body>
+<header><h1>Evidence-to-Product Engine</h1><div>Local-first publishing workspace • $0 startup-cost target • human approval required</div></header>
+<main>
+<div class="grid">
+<aside>
+<div class="card"><h2>Projects</h2><div id="projectList"></div><button onclick="newProject()">+ New project</button></div>
+<div class="card"><h3>Data</h3><div class="actions"><button class="secondary" onclick="exportAll()">Export all</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import</button></div><input id="importFile" type="file" accept=".json" hidden onchange="importData(event)"><p class="muted">Everything stays in this browser unless you export it.</p></div>
+</aside>
+<section id="workspace"></section>
+</div>
+</main>
+<script>
+const KEY="bre.v1";
+const STAGES=["topic","market_scan","demand_evidence","competitors","review_mining","gap_detection","opportunity","outline","drafting","fact_check","edit","packaging","launch","measuring","updating"];
+const stageNames={topic:"Topic",market_scan:"Market scan",demand_evidence:"Demand evidence",competitors:"Competitor analysis",review_mining:"Review mining",gap_detection:"Gap detection",opportunity:"Opportunity report",outline:"Outline",drafting:"Draft",fact_check:"Fact check",edit:"Edit",packaging:"Package",launch:"Launch",measuring:"Measure",updating:"Update"};
+let db=load(), currentId=db.currentId||null, tab="overview";
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{projects:{},currentId:null}}catch{return{projects:{},currentId:null}}}
+function save(){db.currentId=currentId;localStorage.setItem(KEY,JSON.stringify(db));render()}
+function slugify(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,70)}
+function blankProject(name="",audience="",outcome=""){const id=crypto.randomUUID();return{id,name,slug:slugify(name),audience,outcome,status:"idea",created_at:new Date().toISOString(),updated_at:new Date().toISOString(),startup_cost_usd:0,human_approval:false,stages:Object.fromEntries(STAGES.map(x=>[x,false])),sources:[],gaps:[],notes:""}}
+function newProject(){const p=blankProject();db.projects[p.id]=p;currentId=p.id;tab="overview";save();document.querySelector("#name")?.focus()}
+function deleteProject(){const p=get();if(!p||!confirm("Delete this local project? This cannot be undone."))return;delete db.projects[p.id];currentId=Object.keys(db.projects)[0]||null;save()}
+function get(){return currentId?db.projects[currentId]:null}
+function update(p){p.updated_at=new Date().toISOString();db.projects[p.id]=p;save()}
+function render(){renderList();const p=get();if(!p){workspace.innerHTML='<div class="card"><h2>Create your first project</h2><p>Start with a specific reader, problem, and measurable outcome.</p><button onclick="newProject()">Create project</button></div>';return}renderWorkspace(p)}
+function renderList(){const el=document.querySelector("#projectList");const ps=Object.values(db.projects);el.innerHTML=ps.length?ps.map(p=>'<button class="secondary" style="text-align:left;margin-bottom:6px" onclick="selectProject(\''+p.id+'\')">'+esc(p.name||"Untitled")+'</button>').join(""):'<p class="muted">No projects yet.</p>'}
+function selectProject(id){currentId=id;tab="overview";save()}
+function nav(t){tab=t;render()}
+function renderWorkspace(p){
+const progress=Math.round(STAGES.filter(s=>p.stages[s]).length/STAGES.length*100);
+workspace.innerHTML=`
+<div class="card">
+<div class="actions"><span class="pill">${esc(p.status)}</span><span class="pill">Progress ${progress}%</span><span class="pill">Startup cost $0</span></div>
+<div class="tabs">${["overview","research","gaps","pipeline","approval"].map(t=>'<button class="tab '+(tab===t?"active":"secondary")+'" onclick="nav(\''+t+'\')">'+t[0].toUpperCase()+t.slice(1)+'</button>').join("")}</div>
+${tab==="overview"?overview(p):tab==="research"?research(p):tab==="gaps"?gaps(p):tab==="pipeline"?pipeline(p):approval(p)}
+</div>`;
+}
+function overview(p){return `
+<h2>Project brief</h2>
+<div class="row"><div><label>Project name<input id="name" value="${attr(p.name)}" onchange="field('name',this.value)"></label></div><div><label>Target reader<input value="${attr(p.audience)}" onchange="field('audience',this.value)"></label></div></div>
+<label>Desired outcome<textarea onchange="field('outcome',this.value)">${esc(p.outcome)}</textarea></label>
+<label>Project status<select onchange="field('status',this.value)">${["idea","research","validated","outline","drafting","fact-check","edit","packaging","ready","published","measuring","updating"].map(x=>'<option '+(p.status===x?"selected":"")+'>'+x+'</option>').join("")}</select></label>
+<label>Notes<textarea onchange="field('notes',this.value)">${esc(p.notes)}</textarea></label>
+<div class="actions"><button onclick="downloadProject()">Export project JSON</button><button class="danger" onclick="deleteProject()">Delete project</button></div>
+`}
+function research(p){return `
+<h2>Research source ledger</h2><p class="muted">Record evidence, not conclusions. Include the date checked and enough detail to reproduce the finding.</p>
+<div class="row"><label>Source URL<input id="srcUrl" placeholder="https://..."></label><label>Source type<select id="srcType"><option>Search result</option><option>Amazon/product page</option><option>Review</option><option>Reddit/forum</option><option>Official documentation</option><option>Trend/data</option><option>Other</option></select></label></div>
+<label>What does this source show?<textarea id="srcFinding" placeholder="Concrete observation or reader problem"></textarea></label>
+<label>Claim supported<textarea id="srcClaim" placeholder="What statement will this evidence support?"></textarea></label>
+<button onclick="addSource()">Add source</button>
+<div id="sourceList">${(p.sources||[]).length?p.sources.map((s,i)=>'<div class="source"><strong>'+esc(s.type)+' · '+esc(s.checked_at)+'</strong><a href="'+attr(s.url)+'" target="_blank" rel="noopener">'+esc(s.url)+'</a><p>'+esc(s.finding)+'</p><p class="muted">Claim: '+esc(s.claim)+'</p><button class="danger" onclick="removeSource('+i+')">Remove</button></div>').join(""):'<p class="muted">No sources recorded yet.</p>'}</div>
+`}
+function gaps(p){const avg=(p.gaps||[]).length?((p.gaps||[]).reduce((a,g)=>a+Number(g.score||0),0)/p.gaps.length).toFixed(1):"—";return `
+<h2>Gap scorecards</h2><p>Score evidence strength for a specific reader problem. This is a research prioritization aid, not a sales or income prediction.</p>
+<div class="card"><span class="muted">Average gap evidence score</span><div class="score">${avg} / 5</div></div>
+<div class="row"><label>Reader problem<input id="gapProblem" placeholder="e.g. freelancers cannot reconcile X"></label><label>Demand evidence (1–5)<input id="g1" type="number" min="1" max="5" value="1"></label><label>Complaint frequency (1–5)<input id="g2" type="number" min="1" max="5" value="1"></label><label>Competitor weakness (1–5)<input id="g3" type="number" min="1" max="5" value="1"></label><label>Specificity (1–5)<input id="g4" type="number" min="1" max="5" value="1"></label><label>Expansion potential (1–5)<input id="g5" type="number" min="1" max="5" value="1"></label></div>
+<button onclick="addGap()">Add gap</button>
+<div>${(p.gaps||[]).length?p.gaps.map((g,i)=>'<div class="gap"><strong>'+esc(g.problem)+'</strong><span class="pill">Score '+g.score+'/5</span><p class="muted">Demand '+g.demand+' · Complaints '+g.complaints+' · Competitor weakness '+g.competitor+' · Specificity '+g.specificity+' · Expansion '+g.expansion+'</p><button class="danger" onclick="removeGap('+i+')">Remove</button></div>').join(""):'<p class="muted">No gaps scored yet.</p>'}</div>
+`}
+function pipeline(p){return `<h2>Pipeline</h2><p class="muted">A stage is only complete when its artifact exists and has been checked. The browser tracks the state; it does not fabricate research.</p>${STAGES.map(s=>'<label class="stage"><input type="checkbox" '+(p.stages[s]?"checked":"")+' onchange="toggleStage(\''+s+'\',this.checked)"> <span>'+stageNames[s]+'</span></label>').join("")}`}
+function approval(p){return `
+<h2>Human publication gate</h2>
+<div class="card ${p.human_approval?"success":"warning"}"><strong>${p.human_approval?"APPROVED BY USER":"NOT APPROVED"}</strong><p>Publishing must remain a deliberate human action. This checkbox is local state only; it does not publish anywhere.</p><label><input style="width:auto" type="checkbox" ${p.human_approval?"checked":""} onchange="toggleApproval(this.checked)"> I reviewed the manuscript, facts, rights, metadata, platform requirements, and AI disclosure requirements.</label></div>
+<h3>Pre-publication checklist</h3><ul><li>Factual claims checked and sources recorded</li><li>No copied or rights-uncertain material</li><li>Metadata and description reviewed</li><li>Cover/assets have appropriate rights</li><li>Required AI disclosure determined</li><li>Final manuscript edited and readable</li><li>KDP/Gumroad requirements checked at time of publishing</li></ul>
+`}
+function field(k,v){const p=get();p[k]=v;if(k==="name")p.slug=slugify(v);update(p)}
+function toggleStage(s,v){const p=get();if(!p.stages)p.stages={};p.stages[s]=v;update(p)}
+function toggleApproval(v){const p=get();p.human_approval=v;update(p)}
+function addSource(){const p=get(),url=srcUrl.value.trim(),finding=srcFinding.value.trim();if(!url||!finding){alert("URL and finding are required.");return}if(!p.sources)p.sources=[];p.sources.push({url,type:srcType.value,finding,claim:srcClaim.value.trim(),checked_at:new Date().toISOString().slice(0,10)});update(p)}
+function removeSource(i){const p=get();if(p.sources)p.sources.splice(i,1);update(p)}
+function addGap(){const p=get(),problem=gapProblem.value.trim();if(!problem){alert("Reader problem is required.");return}const vals=[g1,g2,g3,g4,g5].map(x=>Math.max(1,Math.min(5,Number(x.value)||1)));const score=(vals.reduce((a,b)=>a+b,0)/5).toFixed(1);if(!p.gaps)p.gaps=[];p.gaps.push({problem,demand:vals[0],complaints:vals[1],competitor:vals[2],specificity:vals[3],expansion:vals[4],score:Number(score)});update(p)}
+function removeGap(i){const p=get();if(p.gaps)p.gaps.splice(i,1);update(p)}
+function download(filename,data){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function downloadProject(){const p=get();if(!p)return;download((p.slug||"project")+".json",p)}
+function exportAll(){download("evidence-to-product-engine-backup.json",db)}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const incoming=JSON.parse(r.result);if(incoming.id && incoming.name !== undefined){db.projects[incoming.id]=incoming;currentId=incoming.id;}else if(incoming.projects && typeof incoming.projects==="object"){Object.assign(db.projects,incoming.projects);currentId=incoming.currentId||currentId||Object.keys(db.projects)[0]||null;}else{throw Error("Invalid format");}save();alert("Import complete.")}catch(err){alert("Import failed: "+err.message)}};r.readAsText(f);e.target.value=""}
+function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function attr(s){return esc(s)}
+render();
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script>
+</body>
+</html>

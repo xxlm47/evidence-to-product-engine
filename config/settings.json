@@ -1,0 +1,32 @@
+{
+  "project": "Evidence-to-Product Engine",
+  "startup_cost_limit_usd": 0,
+  "currency": "USD",
+  "default_word_count_min": 10000,
+  "default_word_count_max": 30000,
+  "default_chapter_count": 10,
+  "human_approval_required_before_publish": true,
+  "paid_apis_required": false,
+  "paid_ads_allowed": false,
+  "premium_assets_allowed": false,
+  "outsourcing_allowed_before_revenue": false,
+  "research_depth": "evidence-first",
+  "output_formats": [
+    "markdown",
+    "txt",
+    "json"
+  ],
+  "marketplaces": [
+    "Amazon KDP",
+    "Gumroad"
+  ],
+  "ai_disclosure_required_when_ai_generates_publishable_content": true,
+  "mission": "Find real problems, evaluate evidence and demand, create useful digital products, launch responsibly, and improve or stop based on measured outcomes.",
+  "product_types_supported_as_workflows": [
+    "nonfiction ebooks and books",
+    "templates and checklists",
+    "toolkits and worksheets",
+    "other digital products with manual workflow adaptation"
+  ],
+  "income_guaranteed": false
+}

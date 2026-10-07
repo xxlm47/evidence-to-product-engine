@@ -1,0 +1,35 @@
+{
+  "engine": {
+    "name": "Evidence-to-Product Engine",
+    "version": "2.0"
+  },
+  "project": {
+    "slug": "what-are-the-biggest-problems-people-are-facing-in-2026-that-they-urgently-need-practical-solutions-for",
+    "topic": "What are the biggest problems people are facing in 2026 that they urgently need practical solutions for?",
+    "audience": "Everyday people affected by rising costs, economic uncertainty, AI disruption, scams, and rapid changes in technology",
+    "primary_outcome": "Identify the most important problems affecting their finances, work, safety, and daily life in 2026, evaluate practical solutions using reliable evidence, and take specific actions to improve their situation.",
+    "mode": "outline",
+    "created_at": "2026-10-06T15:31:59Z",
+    "startup_cost_usd": 0
+  },
+  "pipeline": {
+    "current_stage": "INTAKE",
+    "status": "active",
+    "completed_stages": []
+  },
+  "gates": {
+    "research_approved": false,
+    "opportunity_approved": false,
+    "outline_approved": false,
+    "draft_approved": false,
+    "fact_check_approved": false,
+    "package_approved": false,
+    "launch_approved": false
+  },
+  "metrics": {
+    "units_sold": 0,
+    "revenue_usd": 0,
+    "reviews": 0,
+    "conversion_rate": null
+  }
+}

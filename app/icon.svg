@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Evidence-to-Product Engine">
+  <rect width="512" height="512" rx="96" fill="#111827"/>
+  <path d="M150 146h140a48 48 0 0 1 48 48v172H198a48 48 0 0 0-48 48V146z" fill="none" stroke="#f9fafb" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M150 414h188" stroke="#f9fafb" stroke-width="26" stroke-linecap="round"/>
+  <path d="M198 246h120M198 300h90" stroke="#2563eb" stroke-width="26" stroke-linecap="round"/>
+</svg>
